@@ -1,0 +1,72 @@
+---
+version: '2'
+    
+volumes:
+  tsdb-access-vol:
+    driver: local
+  tsdb-data1-vol:
+    driver: local
+  tsdb-data2-vol:
+    driver: local
+  tsdb-data3-vol:
+    driver: local
+  
+services:  
+  tsdb-access:
+    image: timescale/timescaledb:2.6.1-pg14
+    hostname: tsdb-access
+    container_name: tsdb-access
+    depends_on:
+      - tsdb-data1
+      - tsdb-data2
+      - tsdb-data3
+    ports:
+      - "5433:5432"
+    volumes:
+      - tsdb-access-vol:/var/lib/postgresql/data
+      - ./trust-all.sh:/docker-entrypoint-initdb.d/777_trust-all.sh
+      - ./access-init.sh:/docker-entrypoint-initdb.d/888_access-init.sh
+      - ./configure-cluster.sql:/docker-entrypoint-initdb.d/999_configure-cluster.sql
+    environment: 
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: testdb
+
+  tsdb-data1:
+    image: timescale/timescaledb:2.6.1-pg14
+    hostname: dn1
+    container_name: tsdb-data1
+    ports:
+      - "5434:5432"
+    volumes:
+      - tsdb-data1-vol:/var/lib/postgresql/data
+      - ./trust-all.sh:/docker-entrypoint-initdb.d/888_trust-all.sh
+      - ./data-init.sh:/docker-entrypoint-initdb.d/999_data-init.sh
+    environment: 
+      POSTGRES_PASSWORD: password
+
+  tsdb-data2:
+    image: timescale/timescaledb:2.6.1-pg14
+    hostname: dn2
+    container_name: tsdb-data2
+    ports:
+      - "5435:5432"
+    volumes:
+      - tsdb-data2-vol:/var/lib/postgresql/data
+      - ./trust-all.sh:/docker-entrypoint-initdb.d/888_trust-all.sh
+      - ./data-init.sh:/docker-entrypoint-initdb.d/999_data-init.sh
+    environment: 
+      POSTGRES_PASSWORD: password
+
+  tsdb-data3:
+    image: timescale/timescaledb:2.6.1-pg14
+    hostname: dn3
+    container_name: tsdb-data3
+    ports:
+      - "5436:5432"
+    volumes:
+      - tsdb-data3-vol:/var/lib/postgresql/data
+      - ./trust-all.sh:/docker-entrypoint-initdb.d/888_trust-all.sh
+      - ./data-init.sh:/docker-entrypoint-initdb.d/999_data-init.sh
+    environment: 
+      POSTGRES_PASSWORD: password
+      
